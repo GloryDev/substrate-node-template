@@ -39,6 +39,10 @@ pub mod pallet {
 	// https://substrate.dev/docs/en/knowledgebase/runtime/storage#declaring-storage-items
 	pub type Something<T> = StorageValue<_, u32>;
 
+	#[pallet::storage]
+	#[pallet::getter(fn value_getter)]
+	pub type Value<T> = StorageValue<_, u64>;
+
 	// Pallets use events to inform users when important changes are made.
 	// https://substrate.dev/docs/en/knowledgebase/runtime/events
 	#[pallet::event]
@@ -67,6 +71,25 @@ pub mod pallet {
 	// Dispatchable functions must be annotated with a weight and must return a DispatchResult.
 	#[pallet::call]
 	impl<T:Config> Pallet<T> {
+
+		/// An example dispatchable that takes a singles value as a parameter, writes the value to
+		/// storage and emits an event. This function must be dispatched by a signed extrinsic.
+		#[pallet::weight(10_000 + T::DbWeight::get().writes(1))]
+		pub fn set_value(origin: OriginFor<T>, value: u64) -> DispatchResultWithPostInfo {
+			// Check that the extrinsic was signed and get the signer.
+			// This function will return an error if the extrinsic is not signed.
+			// https://substrate.dev/docs/en/knowledgebase/runtime/origin
+			let who = ensure_signed(origin)?;
+
+			// Update storage.
+			<Value<T>>::put(value);
+
+			// Emit an event.
+			//Self::deposit_event(Event::SomethingStored(something, who));
+			// Return a successful DispatchResultWithPostInfo
+			Ok(().into())
+		}
+
 		/// An example dispatchable that takes a singles value as a parameter, writes the value to
 		/// storage and emits an event. This function must be dispatched by a signed extrinsic.
 		#[pallet::weight(10_000 + T::DbWeight::get().writes(1))]
